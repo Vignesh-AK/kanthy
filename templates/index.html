@@ -1,0 +1,208 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanthy - Sarees</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            font-weight: 200;
+            font-style: normal;
+        }
+
+        .cpt-2 {
+            padding-top: 2rem;
+
+        }
+
+        .cpt-1 {
+            padding-top: 1rem;
+        }
+
+        .cpt-3 {
+            padding-top: 3rem !important;
+        }
+
+        h2 {
+            font-weight: 300;
+        }
+
+        .desc {
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-title {
+            font-weight: 300;
+            font-size: medium;
+        }
+
+        .card {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            /* Make all cards the same height */
+        }
+
+        .card img {
+            width: 100%;
+            height: 300px;
+            /* Adjust as needed */
+            object-fit: cover;
+            /* Ensures the image fills the space properly */
+        }
+
+        .card-body {
+            flex-grow: 1;
+            /* Ensures the text stays at the bottom */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        a {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="container-fluid bg-white py-3 border-bottom">
+        <div class="text-center">
+            <img src="../static/kanthy.svg" alt="" width="150" height="150">
+            <p class="text-uppercase">Grace &amp; Elegance</p>
+        </div>
+    </header>
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">New Arrival</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Best Sellers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Women's Wear</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Men's Wear</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Wedding Guest Edit</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Shop by Occasion</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Shop by Collection</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'cart' %}">Cart</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <section class="container py-4 cpt-3">
+        <h2 class="text-center">SAREES</h2>
+        <p class="text-center desc">Discover the finest collection of sarees at <b>Kanthy</b>, where tradition meets
+            contemporary elegance. Whether you’re looking for a luxurious designer saree, a classic silk saree, or a
+            lightweight georgette drape, we have an exquisite range that suits every occasion.</p>
+
+        <div class="row cpt-2">
+            <aside class="col-md-2">
+                <form method="GET" action="">
+
+                    <h5>Filters</h5>
+                    <div class="accordion" id="filterAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="priceFilter">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapsePrice">Price</button>
+                            </h2>
+                            <div id="collapsePrice" class="accordion-collapse collapse"
+                                data-bs-parent="#filterAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <label for="min_price">Min Price:</label>
+                                        <input type="number" name="min_price" id="min_price" class="form-control"
+                                            placeholder="Min">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="max_price">Max Price:</label>
+                                        <input type="number" name="max_price" id="max_price" class="form-control"
+                                            placeholder="Max">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="colorFilter">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseColor">Color</button>
+                            </h2>
+                            <div id="collapseColor" class="accordion-collapse collapse"
+                                data-bs-parent="#filterAccordion">
+                                <div class="mb-3">
+                                    <h6>Color</h6>
+                                    <input type="checkbox" name="color" value="Red"> Red <br>
+                                    <input type="checkbox" name="color" value="Yellow"> Yellow <br>
+                                    <input type="checkbox" name="color" value="Pink"> Pink <br>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="clothFilter">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#collapseColor">Cloths</button>
+                            </h2>
+                            <div id="collapseColor" class="accordion-collapse collapse"
+                                data-bs-parent="#filterAccordion">
+                                <div class="accordion-body">
+                                    <div class="mb-3">
+                                        <h6>Fabric</h6>
+                                        <input type="checkbox" name="fabric" value="Cotton"> Cotton <br>
+                                        <input type="checkbox" name="fabric" value="Silk"> Silk <br>
+                                        <input type="checkbox" name="fabric" value="Nylon"> Nylon <br>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+
+                </form>
+            </aside>
+            <div class="col-md-10">
+                <div class="row">
+                    {% for product in products %}
+                    <div class="col-md-3">
+                        <div class="card border-0">
+                            <a href="{% url 'product_detail' product.id %}">
+
+                                <img src="{{product.image.url}}" class="card-img-top" alt="{{product.name}}">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">{{product.name}}</h5>
+                                    <p class="text-muted">Rs. {{product.price}} <del>Rs. {{product.price}}</del></p>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>
