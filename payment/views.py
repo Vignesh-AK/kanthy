@@ -9,7 +9,7 @@ from django.http import HttpResponseBadRequest
 razorpay_client = razorpay.Client(
     auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
-
+@csrf_exempt
 def homepage(request):
     currency = 'INR'
     amount = 20000  # Rs. 200
