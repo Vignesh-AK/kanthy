@@ -37,7 +37,7 @@ def homepage(request):
 # we need to csrf_exempt this url as
 # POST request will be made by Razorpay
 # and it won't have the csrf token.
-@csrf_exempt
+# @csrf_exempt
 def paymenthandler(request):
 
     # only accept POST request.
