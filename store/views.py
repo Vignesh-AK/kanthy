@@ -130,4 +130,5 @@ def place_order(request):
     except Exception as e:
         return render(request, "order_error.html", {"error": str(e)})
     
-    
+def privacy_policy(request):
+    return render(request, 'privacy_policy.html')
