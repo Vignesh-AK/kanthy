@@ -131,5 +131,5 @@ STATICFILES_DIRS = [BASE_DIR / "static"]  # If you have additional static files 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-RAZOR_KEY_ID = "rzp_live_CJD1zC2miDBFO1"
-RAZOR_KEY_SECRET = "7lmoFELZcanIbkYyjS6qYyGw"
+RAZOR_KEY_ID = "rzp_test_DPHpcvr0CmWwU5"
+RAZOR_KEY_SECRET = "ViDAQg4C638SOh7SH1tKcGIJ"

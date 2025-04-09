@@ -21,7 +21,7 @@ def homepage(request):
 
     # order id of newly created order.
     razorpay_order_id = razorpay_order['id']
-    callback_url = 'https://wonderstroke.com/payment/paymenthandler/'
+    callback_url = 'https://kanthy.com/payment/paymenthandler/'
 
     # we need to pass these details to frontend.
     context = {}
