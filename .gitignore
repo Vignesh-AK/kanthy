@@ -4,3 +4,18 @@
 .env.*.local
 env/
 __pycache__/
+# Ignore Python cache files
+*.pyc
+*.pyo
+*.pyd
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints
+# Ignore VS Code settings
+.vscode/
+# Ignore macOS Finder files
+.DS_Store
+# Ignore log files
+*.log
+# Ignore coverage reports
+coverage/
+
