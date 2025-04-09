@@ -73,6 +73,10 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'eka.wsgi.application'
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://api.razorpay.com",
+    "https://kanthy.com",  # Make sure your own domain is also listed
+]
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
