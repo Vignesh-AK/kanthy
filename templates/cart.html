@@ -251,7 +251,16 @@ window.onload = displayCart;
 
 // Function to get CSRF token from Django template
 function getCSRFToken() {
-    return document.cookie.split('; ').find(row => row.startsWith('csrftoken=')).split('=')[1];
+    const csrfCookie = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('csrftoken='));
+    
+    if (!csrfCookie) {
+        console.warn("⚠️ CSRF token not found in cookies.");
+        return null;
+    }
+
+    return csrfCookie.split('=')[1];
 }
 </script>
 </body>
