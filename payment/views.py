@@ -42,46 +42,46 @@ def paymenthandler(request):
     print("Payment Handler Called")
     # only accept POST request.
     if request.method == "POST":
-        try:
+        # try:
           
             # get the required parameters from post request.
-            payment_id = request.POST.get('razorpay_payment_id', '')
-            razorpay_order_id = request.POST.get('razorpay_order_id', '')
-            signature = request.POST.get('razorpay_signature', '')
+        payment_id = request.POST.get('razorpay_payment_id', '')
+        razorpay_order_id = request.POST.get('razorpay_order_id', '')
+        signature = request.POST.get('razorpay_signature', '')
 
-            print("Payment ID: ", payment_id)
-            print("Razorpay Order ID: ", razorpay_order_id)
-            print("Signature: ", signature)
-            params_dict = {
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': payment_id,
-                'razorpay_signature': signature
-            }
+        print("Payment ID: ", payment_id)
+        print("Razorpay Order ID: ", razorpay_order_id)
+        print("Signature: ", signature)
+        params_dict = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        }
 
-            # verify the payment signature.
-            result = razorpay_client.utility.verify_payment_signature(
-                params_dict)
-            if result is not None:
-                amount = 20000  # Rs. 200
-                try:
+        # verify the payment signature.
+        result = razorpay_client.utility.verify_payment_signature(
+            params_dict)
+        if result is not None:
+            amount = 20000  # Rs. 200
+            try:
 
-                    # capture the payemt
-                    razorpay_client.payment.capture(payment_id, amount)
+                # capture the payemt
+                razorpay_client.payment.capture(payment_id, amount)
 
-                    # render success page on successful caputre of payment
-                    return render(request, 'paymentsuccess.html')
-                except:
+                # render success page on successful caputre of payment
+                return render(request, 'paymentsuccess.html')
+            except:
 
-                    # if there is an error while capturing payment.
-                    return render(request, 'paymentfail.html')
-            else:
-
-                # if signature verification fails.
+                # if there is an error while capturing payment.
                 return render(request, 'paymentfail.html')
-        except:
+        else:
 
-            # if we don't find the required parameters in POST data
+            # if signature verification fails.
             return render(request, 'paymentfail.html')
+        # except:
+
+        #     # if we don't find the required parameters in POST data
+        #     return render(request, 'paymentfail.html')
     else:
        # if other than POST request is made.
         print("Payment Handler Called not post")
