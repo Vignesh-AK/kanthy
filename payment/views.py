@@ -70,7 +70,7 @@ def paymenthandler(request):
             order = payment.order
             payment.payment_id = payment_id
             payment.status = "completed"
-            amount = order.payment * 10  # Rs. 200
+            amount = payment.amount
             # try:
                 # capture the payemt
             razorpay_client.payment.capture(payment_id, amount)
