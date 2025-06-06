@@ -21,7 +21,7 @@ def homepage(request):
 
     # order id of newly created order.
     razorpay_order_id = razorpay_order['id']
-    callback_url = 'https://kanthy.com/payment/test/'
+    callback_url = 'https://kanthy.com/payment/payment-handler/'
 
     # we need to pass these details to frontend.
     context = {}
@@ -81,13 +81,14 @@ def paymenthandler(request):
         except:
 
             # if we don't find the required parameters in POST data
-            return HttpResponseBadRequest()
+            return render(request, 'paymentfail.html')
     else:
        # if other than POST request is made.
-        return HttpResponseBadRequest()
+        print("Payment Handler Called not post")
+        return render(request, 'paymentfail.html')
 
 
 @csrf_exempt
 def test_view(request):
-    print("Test view reached!")
+    print("Payment Handler Called")
     return JsonResponse({"ok": True})
