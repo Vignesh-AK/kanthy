@@ -37,9 +37,9 @@ def homepage(request):
 # we need to csrf_exempt this url as
 # POST request will be made by Razorpay
 # and it won't have the csrf token.
-# @csrf_exempt
+@csrf_exempt
 def paymenthandler(request):
-
+    print("Payment Handler Called")
     # only accept POST request.
     if request.method == "POST":
         try:
@@ -48,6 +48,10 @@ def paymenthandler(request):
             payment_id = request.POST.get('razorpay_payment_id', '')
             razorpay_order_id = request.POST.get('razorpay_order_id', '')
             signature = request.POST.get('razorpay_signature', '')
+
+            print("Payment ID: ", payment_id)
+            print("Razorpay Order ID: ", razorpay_order_id)
+            print("Signature: ", signature)
             params_dict = {
                 'razorpay_order_id': razorpay_order_id,
                 'razorpay_payment_id': payment_id,
