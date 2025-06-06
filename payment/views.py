@@ -62,18 +62,19 @@ def paymenthandler(request):
         result = razorpay_client.utility.verify_payment_signature(
             params_dict)
         if result is not None:
+            print("Signature Verified")
             amount = 20000  # Rs. 200
-            try:
+            # try:
 
                 # capture the payemt
-                razorpay_client.payment.capture(payment_id, amount)
+            razorpay_client.payment.capture(payment_id, amount)
 
-                # render success page on successful caputre of payment
-                return render(request, 'paymentsuccess.html')
-            except:
+            # render success page on successful caputre of payment
+            return render(request, 'paymentsuccess.html')
+            # except:
 
                 # if there is an error while capturing payment.
-                return render(request, 'paymentfail.html')
+                # return render(request, 'paymentfail.html')
         else:
 
             # if signature verification fails.
