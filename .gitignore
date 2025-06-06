@@ -19,3 +19,23 @@ __pycache__/
 # Ignore coverage reports
 coverage/
 
+.pyc
+# Ignore virtual environment directories
+venv/
+# Ignore build directories
+build/
+# Ignore distribution directories
+dist/
+# Ignore egg-info directories
+*.egg-info/
+# Ignore Python bytecode files
+*.py[cod]
+# Ignore test output files
+*.test
+# Ignore test coverage files
+*.coverage
+# Ignore cache directories
+.cache/
+# Ignore pipenv files
+*.pyc
+db.sqlite3
