@@ -36,7 +36,7 @@ def create_shiprocket_order(order):
     
     payload =  {
   "order_id": "ORD123456",
-  "order_date": "2025-04-06",
+  "order_date": "2025-06-06",
   "pickup_location": "Home",
   "channel_id": "",
   "comment": "Handle with care",
@@ -100,7 +100,7 @@ def create_shiprocket_order(order):
   "invoice_number": "INV-56789",
   "order_type": "ESSENTIALS"
 }
-    print("Payload for Shiprocket:", payload)
+    # print("Payload for Shiprocket:", payload)
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {token}"
@@ -108,7 +108,9 @@ def create_shiprocket_order(order):
     
     response = requests.post(url, data=json.dumps(payload), headers=headers)
     if response.status_code == 200:
+        print("Order created successfully:", response.json())
         return response.json()
     else:
+        print("Failed to create order:", response.text)
         raise Exception(f"Failed to create order: {response.text}")
     

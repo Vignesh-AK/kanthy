@@ -1,4 +1,6 @@
 from django.shortcuts import render, get_object_or_404
+
+from payment.models import Payment
 from .models import Product
 from .utils import create_shiprocket_order
 import uuid
@@ -7,7 +9,8 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import json
 from .models import Cart, CartProduct  # Assuming you have a CartItem model
-
+import razorpay
+from django.conf import settings
 
 def product_list(request):
     products = Product.objects.all()
@@ -94,39 +97,59 @@ def save_cart(request):
     return JsonResponse({"success": False, "error": "Invalid request"})
     
 
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 def place_order(request):
     # if request.method == "POST":
         # Extract form data (customize based on your frontend form)
-    customer_name = "Vignesh"
-    customer_email = "vigneshayanikodan@gmail.com"
-    customer_phone = "917561071623"
+    customer_name = request.user.first_name + " " + request.user.last_name
+    customer_email = request.user.email
+    customer_phone = request.user.phone
     address = Address.objects.get(user=request.user, is_default=True)
-    city = "Chennai"
-    pincode = "600001"
-    state = "Tamil Nadu"
-    total_amount =  1000  # Total amount of the order
-
+    city = address.city
+    pincode = address.pincode
+    state = address.state
+    amount = request.POST.get("amount")  # Total amount of the order
+    quantity = request.POST.get("quantity", 1)  # Default to 1 if not provided
     # Create order in your database
     order = Order.objects.create(
         order_id=str(uuid.uuid4()),  # Unique order ID
-        quantity=1,
+        quantity=quantity,
         user=request.user,
         address=address,
-        # city=city,
-        # pincode=pincode,
-        # state=state,
-        total_price=total_amount
+        total_price=amount
     )
     
+    currency = 'INR'
+
+    # Create a Razorpay Order
+    razorpay_order = razorpay_client.order.create(dict(amount=amount,
+                                                       currency=currency,
+                                                       payment_capture='0'))
+
+    # order id of newly created order.
+    razorpay_order_id = razorpay_order['id']
+    callback_url = 'https://kanthy.com/payment/payment-handler/'
+
+    # we need to pass these details to frontend.
+    context = {}
+    context['razorpay_order_id'] = razorpay_order_id
+    context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
+    context['razorpay_amount'] = amount
+    context['currency'] = currency
+    context['callback_url'] = callback_url
+    Payment.objects.create(
+        order=order,
+        user=request.user,
+        amount=amount,
+        status='pending',
+        transaction_id=razorpay_order_id,
+    )
+    return render(request, 'payment.html', context=context)
+
     # Send order to Shiprocket
-    try:
-        shiprocket_response = create_shiprocket_order(order)
-        order.status = "Shiprocket Created"
-        order.save()
-        return render(request, "order_success.html", {"order": order, "shiprocket": shiprocket_response})
-    except Exception as e:
-        return render(request, "order_error.html", {"error": str(e)})
+    
     
 def privacy_policy(request):
     return render(request, 'privacy_policy.html')

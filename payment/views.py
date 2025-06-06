@@ -4,6 +4,9 @@ from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponseBadRequest, JsonResponse
 
+from payment.models import Payment
+from store.utils import create_shiprocket_order
+
 
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
@@ -63,12 +66,19 @@ def paymenthandler(request):
             params_dict)
         if result is not None:
             print("Signature Verified")
-            amount = 20000  # Rs. 200
+            payment = Payment.objects.get(payment_id=payment_id)
+            order = payment.order
+            amount = order.payment * 10  # Rs. 200
             # try:
-
                 # capture the payemt
             razorpay_client.payment.capture(payment_id, amount)
-
+            try:
+                shiprocket_response = create_shiprocket_order(order)
+                order.status = "Shiprocket Created"
+                order.save()
+                return render(request, "order_success.html", {"order": order, "shiprocket": shiprocket_response})
+            except Exception as e:
+                return render(request, "order_error.html", {"error": str(e)})
             # render success page on successful caputre of payment
             return render(request, 'paymentsuccess.html')
             # except:

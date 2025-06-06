@@ -10,7 +10,12 @@ class Payment(models.Model):
         ('paypal', 'PayPal'),
         ('cod', 'Cash on Delivery'),
     ]
-
+    STATUS = [
+        ('pending', 'Pending'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('refunded', 'Refunded'),
+    ]
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
