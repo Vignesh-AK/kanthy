@@ -121,6 +121,8 @@
 </head>
 
 <body>
+    <meta name="csrf-token" content="{{ csrf_token }}">
+
     <header class="container-fluid bg-white py-3 border-bottom">
         <div class="text-center">
             <img src="../static/kanthy.svg" alt="" width="150" height="150">
@@ -193,12 +195,13 @@
                         <p>Shipping: FREE</p>
                         <p class="total">Total: ₹{{ total_price }} (Including taxes)</p>
                     </div>
-                    <a class="" href="{% url 'place_order' %}"> Place Order</a>
+                   <button onclick="placeOrder()">Place Order</button>
                     
                 </div>
             </div>
         </div>
     </div>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
         document.querySelectorAll('.address-option input').forEach(radio => {
@@ -209,9 +212,10 @@
         });
     </script>
    <script>
+
     function placeOrder() {
         // Get CSRF token
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
         // Get selected address
         const selectedAddress = document.querySelector('input[name="shipping-address"]:checked');
@@ -239,7 +243,7 @@
             phone: "{{ user.phone }}",
             price: "{{ total_price }}"
         };
-
+        console.log(orderData);
         // Send POST request
         fetch("{% url 'place_order' %}", {
             method: "POST",
@@ -252,7 +256,30 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Order placed successfully!");
+
+                var options = {
+      
+                // Enter the Key ID generated from the Dashboard
+                key: data.razorpay_merchant_key, 
+                
+                // Amount is in currency subunits.
+                // Default currency is INR. Hence, 
+                // 50000 refers to 50000 paise
+                amount: data.amount, 
+                currency: data.currency,
+                
+                // Your/store name.
+                name: "Kanthy", 
+                
+                // Pass the `id` obtained in the response of Step 1
+                order_id: data.razorpay_order_id, 
+                callback_url: data.callback_url,
+
+                };
+                var rzp1 = new Razorpay(options);
+
+                alert("Razorpay options:", options);
+                rzp1.open();
             } else {
                 alert("Failed to place order.");
             }
@@ -260,6 +287,7 @@
         .catch(error => console.error("Error:", error));
     }
 </script>
+  
 </body>
 
 </html>

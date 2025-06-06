@@ -106,11 +106,15 @@ def place_order(request):
     # customer_name = request.user.first_name + " " + request.user.last_name
     # customer_email = request.user.email
     # customer_phone = request.user.phone
+    data = json.loads(request.body.decode("utf-8"))
+    print("Data received:", data)
     address = Address.objects.get(user=request.user, is_default=True)
     # city = address.city
     # pincode = address.pincode
     # state = address.state
-    amount = request.POST.get("price")  # Total amount of the order
+    amount = data.get("price")  # Total amount of the order
+
+    print("Amount:", amount)
     quantity = request.POST.get("quantity", 1)  # Default to 1 if not provided
     # Create order in your database
     order = Order.objects.create(
@@ -118,13 +122,13 @@ def place_order(request):
         quantity=quantity,
         user=request.user,
         address=address,
-        total_price=amount
+        total_price=float(amount)
     )
     
     currency = 'INR'
 
     # Create a Razorpay Order
-    razorpay_order = razorpay_client.order.create(dict(amount=amount,
+    razorpay_order = razorpay_client.order.create(dict(amount=float(amount),
                                                        currency=currency,
                                                        payment_capture='0'))
 
@@ -133,12 +137,12 @@ def place_order(request):
     callback_url = 'https://kanthy.com/payment/payment-handler/'
 
     # we need to pass these details to frontend.
-    context = {}
-    context['razorpay_order_id'] = razorpay_order_id
-    context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
-    context['razorpay_amount'] = amount
-    context['currency'] = currency
-    context['callback_url'] = callback_url
+    # context = {}
+    # context['razorpay_order_id'] = razorpay_order_id
+    # context['razorpay_merchant_key'] = settings.RAZOR_KEY_ID
+    # context['razorpay_amount'] = amount
+    # context['currency'] = currency
+    # context['callback_url'] = callback_url
     Payment.objects.create(
         order=order,
         user=request.user,
@@ -146,7 +150,15 @@ def place_order(request):
         status='pending',
         transaction_id=razorpay_order_id,
     )
-    return render(request, 'payment.html', context=context)
+    print("Payment created:", float(amount)*100)
+    return JsonResponse({
+        'success': True,
+        'razorpay_order_id': razorpay_order_id,
+        'razorpay_merchant_key': settings.RAZOR_KEY_ID,
+        'amount': float(amount)*100,  # Convert to paise
+        'currency': currency,
+        'callback_url': callback_url
+    })
 
     # Send order to Shiprocket
     
