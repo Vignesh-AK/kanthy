@@ -1,10 +1,13 @@
 from django.shortcuts import render, get_object_or_404
 from .models import Product
-from django.shortcuts import redirect
-import requests
 from .utils import create_shiprocket_order
 import uuid
 from .models import Order, Address
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+import json
+from .models import Cart, CartProduct  # Assuming you have a CartItem model
+
 
 def product_list(request):
     products = Product.objects.all()
@@ -63,11 +66,6 @@ def checkout(request):
     }
     return render(request, "checkout.html", context)
     
-from django.shortcuts import render, redirect
-from django.http import JsonResponse
-import json
-from .models import Cart, CartProduct  # Assuming you have a CartItem model
-
 def save_cart(request):
     if request.method == "POST":
         if request.user.is_authenticated:

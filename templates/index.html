@@ -75,6 +75,15 @@
             text-decoration: none;
             color: black;
         }
+        .accordion-item .accordion-button{
+            background-color: #fff;
+        }
+        #applyFilters{
+            margin-top: 1rem;
+            background-color: #d97777;
+            border: none;
+        }
+        
     </style>
 </head>
 
@@ -147,13 +156,14 @@
                             </h2>
                             <div id="collapseColor" class="accordion-collapse collapse"
                                 data-bs-parent="#filterAccordion">
+                                <div class="accordion-body">
                                 <div class="mb-3">
                                     <h6>Color</h6>
                                     <input type="checkbox" name="color" value="Red"> Red <br>
                                     <input type="checkbox" name="color" value="Yellow"> Yellow <br>
                                     <input type="checkbox" name="color" value="Pink"> Pink <br>
                                 </div>
-
+</div>
                             </div>
                         </div>
                         <div class="accordion-item">
@@ -174,7 +184,7 @@
                             </div>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary">Apply Filters</button>
+                    <button type="submit" class="btn btn-primary" id="applyFilters">Apply Filters</button>
 
                 </form>
             </aside>

@@ -229,24 +229,37 @@ window.onload = displayCart;
         return;
     }
 
-    fetch('/save-cart/', {  // Endpoint to save cart data
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCSRFToken() // Function to get CSRF token
-        },
-        body: JSON.stringify({ cart: cart })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            localStorage.removeItem("cart");  // Clear local storage after saving
-            window.location.href = "/checkout/";  // Redirect to checkout page
-        } else {
-            alert("Failed to save cart. Please try again.");
-        }
-    })
-    .catch(error => console.error("Error saving cart:", error));
+    fetch('/save-cart/', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({ cart: cart })
+})
+.then(response => {
+    if (response.status === 401) {
+        window.location.href = "/user/login/";
+        return;
+    }
+    return response.json();
+})
+.then(data => {
+    if (!data) return; // response was a redirect or empty
+
+    console.log("Cart saved successfully:", data);
+    if (data.success) {
+        localStorage.removeItem("cart");
+        window.location.href = "/checkout/";
+    } else {
+        alert("Failed to save cart. Please try again.");
+    }
+})
+.catch(error => {
+    console.error("Error saving cart:", error);
+    alert("Something went wrong while saving the cart.");
+});
+
 }
 
 // Function to get CSRF token from Django template
