@@ -103,14 +103,14 @@ razorpay_client = razorpay.Client(
 def place_order(request):
     # if request.method == "POST":
         # Extract form data (customize based on your frontend form)
-    customer_name = request.user.first_name + " " + request.user.last_name
-    customer_email = request.user.email
-    customer_phone = request.user.phone
+    # customer_name = request.user.first_name + " " + request.user.last_name
+    # customer_email = request.user.email
+    # customer_phone = request.user.phone
     address = Address.objects.get(user=request.user, is_default=True)
-    city = address.city
-    pincode = address.pincode
-    state = address.state
-    amount = request.POST.get("amount")  # Total amount of the order
+    # city = address.city
+    # pincode = address.pincode
+    # state = address.state
+    amount = request.POST.get("price")  # Total amount of the order
     quantity = request.POST.get("quantity", 1)  # Default to 1 if not provided
     # Create order in your database
     order = Order.objects.create(

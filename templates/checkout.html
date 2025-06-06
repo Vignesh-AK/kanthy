@@ -236,7 +236,8 @@
             discount_code: discountCode,
             cart_items: cartItems,
             email: "{{ user.email }}",
-            phone: "{{ user.phone }}"
+            phone: "{{ user.phone }}",
+            price: "{{ total_price }}"
         };
 
         // Send POST request
