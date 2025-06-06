@@ -66,8 +66,10 @@ def paymenthandler(request):
             params_dict)
         if result is not None:
             print("Signature Verified")
-            payment = Payment.objects.get(payment_id=payment_id)
+            payment = Payment.objects.get(transaction_id=razorpay_order_id)
             order = payment.order
+            payment.payment_id = payment_id
+            payment.status = "completed"
             amount = order.payment * 10  # Rs. 200
             # try:
                 # capture the payemt
@@ -75,12 +77,13 @@ def paymenthandler(request):
             try:
                 shiprocket_response = create_shiprocket_order(order)
                 order.status = "Shiprocket Created"
+
                 order.save()
                 return render(request, "order_success.html", {"order": order, "shiprocket": shiprocket_response})
             except Exception as e:
                 return render(request, "order_error.html", {"error": str(e)})
             # render success page on successful caputre of payment
-            return render(request, 'paymentsuccess.html')
+            # return render(request, 'paymentsuccess.html')
             # except:
 
                 # if there is an error while capturing payment.
