@@ -2,7 +2,7 @@ from django.shortcuts import render
 import razorpay
 from django.conf import settings
 from django.views.decorators.csrf import csrf_exempt
-from django.http import HttpResponseBadRequest
+from django.http import HttpResponseBadRequest, JsonResponse
 
 
 # authorize razorpay client with API Keys.
@@ -21,7 +21,7 @@ def homepage(request):
 
     # order id of newly created order.
     razorpay_order_id = razorpay_order['id']
-    callback_url = 'https://kanthy.com/payment/paymenthandler/'
+    callback_url = 'https://kanthy.com/payment/test/'
 
     # we need to pass these details to frontend.
     context = {}
@@ -85,3 +85,9 @@ def paymenthandler(request):
     else:
        # if other than POST request is made.
         return HttpResponseBadRequest()
+
+
+@csrf_exempt
+def test_view(request):
+    print("Test view reached!")
+    return JsonResponse({"ok": True})
