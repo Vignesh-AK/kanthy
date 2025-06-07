@@ -36,13 +36,14 @@ def product_list(request):
         'selected_max_price': max_price,
         'selected_colors': colors,
         'selected_sizes': sizes,
+        'cart_items': CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else [],
     }
 
     return render(request, 'index.html', context)
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
-    return render(request, 'product-detail.html', {'product': product})
+    return render(request, 'product-detail.html', {'product': product, "cart_items": CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else []})
 
 def cart(request):
     if request.user.is_authenticated:
