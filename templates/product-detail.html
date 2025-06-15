@@ -224,8 +224,10 @@
             <a href="#" class="text-dark"><i class="fa-solid fa-user fs-5"></i></a>
             <a href="{% url 'cart' %}" class="text-dark position-relative">
               <i class="fas fa-shopping-cart fs-5"></i>
-              {% if cart_items|length > 0 %}
-              <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_items|length }}</span>
+              {% if cart_quantity > 0 %}
+              <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_quantity }}</span>
+              {% else %}
+              <span id="cartCount"></span>
               {% endif %}
             </a>
           </div>
@@ -318,28 +320,68 @@
             mainImage.src = element.src;
         }
         function addToCart(name, price, image, id) {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    let is_authenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
 
-    // Check if item already exists
-    let existingItem = cart.find(item => item.id === id);
+    if (is_authenticated === "true") {
+        // Authenticated user — call API
+        fetch('/add-to-cart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // 'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ name, price, image, id })
+        })
+        .then(response => {
+            if (response.ok) {
+                updateCartCount(); // Update cart icon
+                alert("Item added to cart.");
+            } else {
+                alert("Failed to add item to cart.");
+            }
+        })
+        .catch(error => {
+            console.error("Error adding to cart:", error);
+        });
 
-    if (existingItem) {
-        existingItem.quantity += 1;
     } else {
-        cart.push({ name, price, image, id, quantity: 1 });
+        // Guest user — use localStorage
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        let existingItem = cart.find(item => item.id === id);
+
+        if (existingItem) {
+            existingItem.quantity += 1;
+        } else {
+            cart.push({ name, price, image, id, quantity: 1 });
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+
+        updateCartCount();
+        alert("Item added to cart.");
     }
-
-    localStorage.setItem("cart", JSON.stringify(cart));
-
-    updateCartCount();
 }
 
 
 
+
 function updateCartCount() {
+
+        let is_authenticated = '{{ user.is_authenticated }}';
         let cart = JSON.parse(localStorage.getItem("cart")) || [];
-        let count = cart.reduce((total, item) => total + item.quantity, 0);
+        //if user is authenticated, fetch the cart from the server{
+        if (is_authenticated == "False"){
+            let count = cart.reduce((total, item) => total + item.quantity, 0);
         document.getElementById("cartCount").innerText = count;
+        }else{
+            location.reload();
+        }
+
+        let cartCount = "{{ cart_quantity }}";
+        console.log(cartCount)
+        document.getElementById("cartCount").innerText = cartCount;
+
     }
 
     </script>

@@ -180,13 +180,12 @@
             <div class="col-md-6">
                 <div class="price-details">
                     <h2>Price Details</h2>
-                    <p><span>Price (3 items)</span> <span>₹7,549</span></p>
-                    <p><span>Discount</span> <span style="color: green;">-₹4,057</span></p>
-                    <p><span>Delivery Charges</span> <span style="color: green;">Free</span></p>
-                    <p><span>Protect Promise Fee</span> <span>₹9</span></p>
+                    <p><span>Price</span> <span>₹{{price.amount}}</span></p>
+                    <p><span>Discount</span> <span style="color: green;">-₹{{price.discount}}</span></p>
+                    <p><span>Delivery Charges</span> <span style="color: green;">{{price.delivery_charge}}</span></p>
                     <hr>
-                    <p><strong>Total Amount</strong> <strong> <span id="total-amount"></span></strong></p>
-                    <p style="color: green;">You will save ₹4,048 on this order</p>
+                    <p><strong>Total Amount</strong> <strong> <span id="total-amount">₹{{price.total}}</span></strong></p>
+                    <p style="color: green;">You will save ₹{{price.discount}} on this order</p>
                     <button class="place-order" onclick="checkout()">PLACE ORDER</button>
                 </div>
             </div>  
@@ -200,53 +199,129 @@
 <script>
     function displayCart() {
     let cartItemsContainer = document.getElementById("cart-items");
-
+    let is_authenticated = '{{ user.is_authenticated }}'; // Assuming user is passed from Django context
+    let cart = ""
     if (!cartItemsContainer) {
         console.error("Cart items container not found!");
         return;
     }
+    if (is_authenticated=="True") {
+        console.log("User is authenticated");
+        console.log('{{ cart|safe|escapejs }}')
+        cart_obj =  JSON.parse('{{ cart|safe|escapejs }}')
+        
+        cart = cart_obj.products;
+        
 
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+    } else {
+        console.log("User is not authenticated");
+         cart = JSON.parse(localStorage.getItem("cart")) || [];
+    }
+
     cartItemsContainer.innerHTML = ""; // Clear previous data
-
+    console.log(cart)
     cart.forEach((item, index) => {
+        console.log(item)
         let cartItem = document.createElement("div");
+        let is_authenticated = "{{user.is_authenticated}}"
+        if (is_authenticated == "False"){
         cartItem.innerHTML = `
             
             <div class="cart-item">
-                <img src="${item.image}" alt="${item.name}">
-                <div class="item-details">
-                    <p><strong>${item.name}</strong></p>
-                    <p class="price">₹${item.price} <span style="color: gray; text-decoration: line-through;">₹${item.price+30}</span> (52% Off)</p>
-                    <p>Delivery by Tomorrow, Wed | Free</p>
-                    <div class="buttons">
-                        <button>Save for Later</button>
-                        <button onClick=removeFromCart(${index})>Remove</button>
-                    </div>
-                </div>
+        <img src="${item.image}" alt="${item.name}">
+        <div class="item-details">
+            <p><strong>${item.name}</strong></p>
+            <p class="price">₹${item.price} <span style="color: gray; text-decoration: line-through;">₹${item.price + 30}</span> (52% Off)</p>
+            <p>Delivery by Tomorrow, Wed | Free</p>
+
+            <div class="buttons">
+                <button onclick="changeQuantity(${index}, 'decrease')">-</button>
+                <span id="quantity-${index}" style="margin: 0 10px;">${item.quantity || 1}</span>
+                <button onclick="changeQuantity(${index}, 'increase')">+</button>
             </div>
+
+            <div class="buttons mt-2">
+                <button>Save for Later</button>
+                <button onClick=removeFromCart(${index})>Remove</button>
+            </div>
+        </div>
+    </div>
         `;
+        }else{
+            cartItem.innerHTML = `
+            
+            <div class="cart-item">
+        <img src="${item.image}" alt="${item.name}">
+        <div class="item-details">
+            <p><strong>${item.name}</strong></p>
+            <p class="price">₹${item.price} <span style="color: gray; text-decoration: line-through;">₹${item.price + 30}</span> (52% Off)</p>
+            <p>Delivery by Tomorrow, Wed | Free</p>
+
+            <div class="buttons">
+                <button onclick="changeQuantity(${item.id}, 'decrease')">-</button>
+                <span id="quantity-${index}" style="margin: 0 10px;">${item.quantity || 1}</span>
+                <button onclick="changeQuantity(${item.id}, 'increase')">+</button>
+            </div>
+
+            <div class="buttons mt-2">
+                <button>Save for Later</button>
+                <button onClick=removeFromCart(${item.id})>Remove</button>
+            </div>
+        </div>
+    </div>
+        `;
+        }
         cartItemsContainer.appendChild(cartItem);
+
     });
 
     updateTotal();
 }
 
 function removeFromCart(index) {
+    let is_authenticated = "{{user.is_authenticated}}"
     console.log("Removing item at index", index);
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
-    console.log(index);
+    console.log(is_authenticated)
+    if (is_authenticated == "False"){
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        console.log(index);
     cart.splice(index, 1);
     localStorage.setItem("cart", JSON.stringify(cart));
 
     displayCart(); // Refresh the cart page
+    }else{
+        fetch('/remove-cart/', {
+            method: 'POST',
+            headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ index: index })
+        })
+        .then(response => {
+            if (response.ok) {
+            console.log("Item removed successfully");
+            displayCart(); // Refresh the cart page
+            location.reload();
+            } else {
+            console.error("Failed to remove item from cart");
+            }
+        })
+        .catch(error => {
+            console.error("Error removing item from cart:", error);
+        });
+    }
+    
 }
 
 function updateTotal() {
+    let is_authenticated = "{{user.is_authenticated}}"
+    if (is_authenticated == "False"){
     let cart = JSON.parse(localStorage.getItem("cart")) || [];
     let totalAmount = cart.reduce((sum, item) => Number(sum) + Number(item.price), 0);
 
     document.getElementById("total-amount").innerText =  totalAmount;
+    }
 }
 
 // Call displayCart() when the cart page loads
@@ -254,43 +329,48 @@ window.onload = displayCart;
 </script>
 <script>
     function checkout() {
-    let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        let is_authenticated = "{{user.is_authenticated}}"
+        if (is_authenticated == "False"){
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-    if (cart.length === 0) {
-        alert("Your cart is empty!");
-        return;
-    }
+            if (cart.length === 0) {
+                alert("Your cart is empty!");
+                return;
+            }
 
-    fetch('/save-cart/', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRFToken': getCSRFToken()
-    },
-    body: JSON.stringify({ cart: cart })
-})
-.then(response => {
-    if (response.status === 401) {
-        window.location.href = "/user/login/";
-        return;
-    }
-    return response.json();
-})
-.then(data => {
-    if (!data) return; // response was a redirect or empty
+            fetch('/save-cart/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({ cart: cart })
+        })
+        .then(response => {
+            if (response.status === 401) {
+                window.location.href = "/user/login/";
+                return;
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (!data) return; // response was a redirect or empty
 
-    console.log("Cart saved successfully:", data);
-    if (data.success) {
-        localStorage.removeItem("cart");
+            console.log("Cart saved successfully:", data);
+            if (data.success) {
+                localStorage.removeItem("cart");
+                window.location.href = "/checkout/";
+            } else {
+                alert("Failed to save cart. Please try again.");
+            }
+        })
+        .catch(error => {
+            console.error("Error saving cart:", error);
+            alert("Something went wrong while saving the cart.");
+        });
+    }else{
         window.location.href = "/checkout/";
-    } else {
-        alert("Failed to save cart. Please try again.");
     }
-})
-.catch(error => {
-    console.error("Error saving cart:", error);
-    alert("Something went wrong while saving the cart.");
-});
 
 }
 
@@ -307,6 +387,49 @@ function getCSRFToken() {
 
     return csrfCookie.split('=')[1];
 }
+</script>
+<script>
+    function changeQuantity(id, action) {
+    let is_authenticated = "{{user.is_authenticated}}";
+
+    if (is_authenticated === "False") {
+        // Local cart update as above
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+        if (!cart[index]) return;
+
+        if (action === "increase") {
+            cart[index].quantity = (cart[index].quantity || 1) + 1;
+        } else if (action === "decrease" && cart[index].quantity > 1) {
+            cart[index].quantity -= 1;
+        }
+
+        localStorage.setItem("cart", JSON.stringify(cart));
+        displayCart();
+    } else {
+        // Authenticated user - send to backend
+        fetch('/update-quantity/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            },
+            body: JSON.stringify({
+                id: id,
+                action: action
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                displayCart();
+                location.reload();
+            } else {
+                alert("Failed to update quantity.");
+            }
+        });
+        
+    }
+}
+
 </script>
 </body>
 

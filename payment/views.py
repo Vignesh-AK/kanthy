@@ -43,10 +43,11 @@ def homepage(request):
 @csrf_exempt
 def paymenthandler(request):
     print("Payment Handler Called")
+
     # only accept POST request.
     if request.method == "POST":
         # try:
-          
+        print(request)
             # get the required parameters from post request.
         payment_id = request.POST.get('razorpay_payment_id', '')
         razorpay_order_id = request.POST.get('razorpay_order_id', '')

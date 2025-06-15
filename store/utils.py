@@ -113,4 +113,21 @@ def create_shiprocket_order(order):
     else:
         print("Failed to create order:", response.text)
         raise Exception(f"Failed to create order: {response.text}")
-    
+
+
+def get_estimated_delivery_date(token, pickup_pincode, delivery_pincode, weight=1, cod=0):
+    url = "https://apiv2.shiprocket.in/v1/external/courier/serviceability/"
+    data = {
+                "pickup_postcode": "679332",
+                "delivery_postcode": "679332",
+                "weight": 1,
+                "cod": 0,
+            }
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {token}"
+    }
+
+    response = requests.get(url, headers=headers, data=json.dumps(data))
+    print(response.json())
+    return response.json()
