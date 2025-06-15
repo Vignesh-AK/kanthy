@@ -4,7 +4,7 @@ from payment.models import Payment
 from .models import Product
 from .utils import create_shiprocket_order, get_estimated_delivery_date, get_shiprocket_token
 import uuid
-from .models import Order, Address
+from .models import Order, Address, OrderItem
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import json
@@ -157,7 +157,12 @@ def place_order(request):
         address=address,
         total_price=float(amount)
     )
-    
+    for product in CartProduct.objects.filter(cart__user=request.user):
+        OrderItem.objects.create(
+            product=product.product,
+            quantity= product.quantity,
+            order = order
+        )
     currency = 'INR'
 
     # Create a Razorpay Order
