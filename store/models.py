@@ -111,5 +111,6 @@ class OrderItem(models.Model):
     delivery_status = models.CharField(max_length=12, choices=STATUS_CHOICES)
 
 
-
-    
+class Invoice(models.Model):
+    invoice_id = models.CharField(max_length=20, unique=True, default=uuid.uuid4)
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name='order')

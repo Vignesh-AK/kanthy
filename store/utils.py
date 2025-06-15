@@ -1,5 +1,7 @@
 import requests
 import json
+from store.models import OrderItem
+from datetime import datetime
 
 def get_shiprocket_token():
     url = "https://apiv2.shiprocket.in/v1/external/auth/login"
@@ -33,60 +35,51 @@ def create_shiprocket_order(order):
     #         "hsn": "6109"  # HSN code for clothing
     #     }
     # ]
-    for item in order:
-
-    
+    order_items = []
+    for item in OrderItem.objects.filter(order=order):
+        order_items.append({
+            "name": item.product.name,  # Replace with dynamic item name
+            "sku": item.product.id,
+            "units": item.quantity,
+            "selling_price": item.product.price,
+            "discount": 0,
+            "tax": 0,
+            "hsn": "6109"  # HSN code for clothing
+        })
+    today = datetime.today()
+    formatted_date = today.strftime('%Y-%m-%d')
     payload =  {
-  "order_id": "ORD123456",
-  "order_date": "2025-06-06",
+  "order_id": order.order_id,
+  "order_date": formatted_date,
   "pickup_location": "Home",
   "channel_id": "",
   "comment": "Handle with care",
   "reseller_name": "John Doe Reseller",
   "company_name": "Wonderstroke Arts Pvt Ltd",
-  "billing_customer_name": "John",
-  "billing_last_name": "Doe",
-  "billing_address": "123, MG Road",
-  "billing_address_2": "Near Central Mall",
+  "billing_customer_name": "Binu",
+  "billing_last_name": "Pv",
+  "billing_address": "A208, ss snowdrops, Belathur Main road",
+  "billing_address_2": "Whitefield, Kadugodi",
   "billing_isd_code": "+91",
   "billing_city": "Bangalore",
   "billing_pincode": "560001",
   "billing_state": "Karnataka",
   "billing_country": "India",
-  "billing_email": "john.doe@example.com",
+  "billing_email": "sales@kanthy.com",
   "billing_phone": "7561071623",
   "billing_alternate_phone": "7561071623",
   "shipping_is_billing": True,
-  "shipping_customer_name": "John",
-  "shipping_last_name": "Doe",
-  "shipping_address": "123, MG Road",
-  "shipping_address_2": "Near Central Mall",
-  "shipping_city": "Bangalore",
-  "shipping_pincode": "560001",
-  "shipping_country": "India",
-  "shipping_state": "Karnataka",
-  "shipping_email": "john.doe@example.com",
-  "shipping_phone": "7561071623",
-  "order_items": [
-    {
-      "name": "Canvas Painting - Sunset",
-      "sku": "PAINT-SUNSET-001",
-      "units": 1,
-      "selling_price": "2999",
-      "discount": "200",
-      "tax": "18",
-      "hsn": "9701"
-    },
-    {
-      "name": "Sketch Portrait",
-      "sku": "SKETCH-JOHN-001",
-      "units": 1,
-      "selling_price": "1499",
-      "discount": "100",
-      "tax": "18",
-      "hsn": "9701"
-    }
-  ],
+  "shipping_customer_name": order.user.first_name,
+  "shipping_last_name": order.user.last_name,
+  "shipping_address": order.address.address,
+  "shipping_address_2": order.address.address,
+  "shipping_city": order.address.city,
+  "shipping_pincode": order.address.pincode,
+  "shipping_country": order.address.country,
+  "shipping_state": order.address.state,
+  "shipping_email": order.user.email,
+  "shipping_phone": order.user.phone,
+  "order_items": order_items,
   "payment_method": "Prepaid",
   "shipping_charges": "100",
   "giftwrap_charges": "50",
@@ -99,7 +92,7 @@ def create_shiprocket_order(order):
   "weight": "1.2",
   "ewaybill_no": "",
   "customer_gstin": "",
-  "invoice_number": "INV-56789",
+  "invoice_number": order.invoice.invoice_id,
   "order_type": "ESSENTIALS"
 }
     # print("Payload for Shiprocket:", payload)
