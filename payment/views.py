@@ -6,7 +6,7 @@ from django.http import HttpResponseBadRequest, JsonResponse
 
 from payment.models import Payment
 from store.utils import create_shiprocket_order
-
+from store.models import Cart
 
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
@@ -80,6 +80,8 @@ def paymenthandler(request):
                 order.status = "Shiprocket Created"
 
                 order.save()
+                cart = Cart.objects.get(user=request.user)
+                cart.delete()
                 return render(request, "order_success.html", {"order": order, "shiprocket": shiprocket_response})
             except Exception as e:
                 return render(request, "order_error.html", {"error": str(e)})
