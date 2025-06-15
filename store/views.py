@@ -27,7 +27,38 @@ def product_list(request):
         products = products.filter(variants__price__gte=min_price, variants__price__lte=max_price).distinct()
 
     if colors:
-        products = products.filter(variants__color__in=colors).distinct()
+        # products = products.filter(variants__color__in=colors).distinct()
+        products = products.filter(variants__product_color__color__in=colors).distinct()
+
+    if sizes:
+        products = products.filter(variants__size__in=sizes).distinct()
+
+    context = {
+        'products': products,
+        'selected_min_price': min_price,
+        'selected_max_price': max_price,
+        'selected_colors': colors,
+        'selected_sizes': sizes,
+        'cart_items': CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else [],
+    }
+
+    return render(request, 'index.html', context)
+
+def product_list_filter(request, product_type):
+    products = Product.objects.filter(product_type=product_type)
+    # Get filter parameters from request
+    min_price = request.GET.get('min_price', '')
+    max_price = request.GET.get('max_price', '')
+    colors = request.GET.getlist('color')
+    sizes = request.GET.getlist('size')
+
+    # Apply filters
+    if min_price.isdigit() and max_price.isdigit():
+        products = products.filter(variants__price__gte=min_price, variants__price__lte=max_price).distinct()
+
+    if colors:
+        # products = products.filter(variants__color__in=colors).distinct()
+        products = products.filter(variants__product_color__color__in=colors).distinct()
 
     if sizes:
         products = products.filter(variants__size__in=sizes).distinct()

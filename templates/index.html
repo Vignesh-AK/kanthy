@@ -131,13 +131,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">New Arrival</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Best Sellers</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Women's Wear</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Wedding Guest Edit</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Sarees</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Kurtas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'cart' %}">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'new_arrival' %}">New Arrival</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'best_sellers' %}">Best Sellers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'casual_wear' %}">Casual Wear</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'wedding_guest_edit' %}">Wedding Guest Edit</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'sarees' %}">Sarees</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'kurtas' %}">Kurtas</a></li>
                 </ul>
             </div>
         </div>

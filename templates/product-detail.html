@@ -140,7 +140,7 @@
         .color-selection {
             margin: 15px 0;
         }
-
+        
         label {
             font-size: 16px;
             font-weight: bold;
@@ -198,7 +198,55 @@
 .image-gallery{
     flex: 0;
 }
+.color-selection {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
 
+  .color-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%; /* Makes it circular */
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+    object-fit: cover;
+  }
+
+  .color-swatch:hover {
+    transform: scale(1.1);
+    border-color: #ccc;
+  }
+
+  .color-swatch.selected {
+    border-color: #000; /* Highlight selected swatch */
+  }
+  .size-selection {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.size-btn {
+  padding: 8px 16px;
+  border: 2px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  font-weight: 500;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.size-btn:hover {
+  border-color: #888;
+}
+
+.size-btn.selected {
+  border-color: #000;
+  background-color: #000;
+  color: #fff;
+}
     </style>
 </head>
 
@@ -242,13 +290,12 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link" href="#">New Arrival</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Best Sellers</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Women's Wear</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Wedding Guest Edit</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Sarees</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#">Kurtas</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'cart' %}">Cart</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'new_arrival' %}">New Arrival</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'best_sellers' %}">Best Sellers</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'casual_wear' %}">Casual Wear</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'wedding_guest_edit' %}">Wedding Guest Edit</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'sarees' %}">Sarees</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'product_list_filter' 'kurtas' %}">Kurtas</a></li>
 
                 </ul>
             </div>
@@ -259,14 +306,18 @@
         <!-- Left Image Gallery -->
         <div class="row">
             <div class="image-gallery col-md-5">
-                <div class="thumbnails">
-                    {% for image in product.images %}
-                    <img src="../static/saree-girl.jpg" alt="Thumbnail" onclick="changeImage(this)">
+                <div id="variant-images-data" style="display: none;">
+                    {% for variant in product.variants.all %}
+                      <div id="variant-{{ variant.id }}">
+                        {% for image in variant.images.all %}
+                          <img src="{{ image.image.url }}">
+                        {% endfor %}
+                      </div>
                     {% endfor %}
-                    <img src="/static/saree-girl.jpg" alt="Thumbnail" onclick="changeImage(this)">
-                    <img src="/static/saree-girl.jpg" alt="Thumbnail" onclick="changeImage(this)">
-                    <img src="/static/saree-girl.jpg" alt="Thumbnail" onclick="changeImage(this)">
-                    <img src="/static/saree-girl.jpg" alt="Thumbnail" onclick="changeImage(this)">
+                  </div>
+                <div class="thumbnails">
+    
+                    
 
                 </div>
                 <div class="main-image">
@@ -292,19 +343,30 @@
 
                 <!-- Size & Color Selection -->
                 <div class="size-selection">
-                    <label>SIZE</label>
-                    <button class="size-btn">OneSize</button>
-                </div>
-
-                <div class="color-selection">
-                    <label>COLOR</label>
-                    <div class="color-options">
-                        {% for color in product.colors %}
-                        <img src="{{color.image.url}}" alt="{{color.name}}" onclick="changeImage(this)">
-                        {% endfor %}
-                    </div>
-                </div>
-
+                    <label>SIZE</label><br>
+                    {% for variant in product.variants.all %}
+                    {% if variant.size %}
+                    <button class="size-btn" data-variant-id="{{ variant.id }}">{{ variant.size }}</button>
+                    {% endif %}
+                    {% endfor %}
+                  </div>
+          
+                  <!-- Color -->
+                  <div class="color-selection mt-3">
+                    <label>COLOR</label><br>
+                    {% for variant in product.variants.all %}
+                    {% for image in variant.images.all %}
+                    {% if forloop.first %}
+                    <img src="{{ image.image.url }}"
+                         alt="{{ variant.name }}"
+                         data-variant-id="{{ variant.id }}"
+                         data-size="{{ variant.size }}"
+                         onclick="selectVariant(this)"
+                         class="color-swatch">
+                    {% endif %}
+                    {% endfor %}
+                    {% endfor %}
+                  </div>
                 <!-- Buttons -->
                 <div class="buttons">
                     <button class="cart-btn" onclick="addToCart('{{product.name}}', '{{product.price}}', '{{product.image.url}}', '{{product.id}}')"><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
@@ -313,7 +375,7 @@
             </div>
         </div>
     </div>
-
+<!-- 
     <script>
         function changeImage(element) {
             let mainImage = document.getElementById("mainProductImage");
@@ -384,7 +446,114 @@ function updateCartCount() {
 
     }
 
-    </script>
+    </script> -->
+    <script>
+        function changeImage(element) {
+          document.getElementById("mainProductImage").src = element.src;
+        }
+    
+        function showVariantImages(variantId) {
+          const thumbnails = document.querySelector(".thumbnails");
+          thumbnails.innerHTML = "";
+    
+          const variantImages = document.querySelectorAll(`#variant-${variantId} img`);
+          variantImages.forEach(img => {
+            const clone = img.cloneNode(true);
+            clone.onclick = () => changeImage(clone);
+            thumbnails.appendChild(clone);
+          });
+    
+          if (variantImages[0]) {
+            document.getElementById("mainProductImage").src = variantImages[0].src;
+          }
+        }
+    
+        function selectVariant(element) {
+          document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+          element.classList.add('selected');
+    
+          const variantId = element.getAttribute("data-variant-id");
+          const size = element.getAttribute("data-size");
+    
+          showVariantImages(variantId);
+          updateSizes(size, variantId);
+        }
+    
+        function updateSizes(size, variantId) {
+          const sizeBtns = document.querySelectorAll('.size-btn');
+          let hasSize = false;
+    
+          sizeBtns.forEach(btn => {
+            const btnVariantId = btn.getAttribute("data-variant-id");
+            if (btnVariantId === variantId) {
+              btn.style.display = "inline-block";
+              hasSize = true;
+            } else {
+              btn.style.display = "none";
+            }
+            btn.classList.remove("selected");
+          });
+    
+          const sizeDiv = document.querySelector('.size-selection');
+          sizeDiv.style.display = hasSize ? 'block' : 'none';
+        }
+    
+        document.querySelectorAll('.size-btn').forEach(btn => {
+          btn.addEventListener('click', function () {
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+          });
+        });
+    
+        function addToCart(name, price, image, id) {
+          const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
+    
+          if (isAuthenticated === "true") {
+            fetch('/add-to-cart/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name, price, image, id })
+            }).then(res => {
+              if (res.ok) {
+                updateCartCount();
+                alert("Item added to cart.");
+              } else {
+                alert("Failed to add item.");
+              }
+            });
+          } else {
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+            let item = cart.find(item => item.id === id);
+            if (item) {
+              item.quantity += 1;
+            } else {
+              cart.push({ name, price, image, id, quantity: 1 });
+            }
+            localStorage.setItem("cart", JSON.stringify(cart));
+            updateCartCount();
+            alert("Item added to cart.");
+          }
+        }
+    
+        function updateCartCount() {
+          const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
+          if (isAuthenticated === "false") {
+            const cart = JSON.parse(localStorage.getItem("cart")) || [];
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById("cartCount").innerText = count;
+          } else {
+            document.getElementById("cartCount").innerText = "{{ cart_quantity }}";
+          }
+        }
+    
+        window.onload = function () {
+          const firstVariant = document.querySelector('.color-swatch');
+          if (firstVariant) {
+            selectVariant(firstVariant);
+          }
+        }
+      </script>
+    
 </body>
 
 </html>
