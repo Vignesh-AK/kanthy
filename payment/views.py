@@ -7,7 +7,7 @@ from django.http import HttpResponseBadRequest, JsonResponse
 from payment.models import Payment
 from store.utils import create_shiprocket_order
 from store.models import Cart
-
+from store.models import Invoice
 # authorize razorpay client with API Keys.
 razorpay_client = razorpay.Client(
     auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
@@ -73,7 +73,8 @@ def paymenthandler(request):
             payment.status = "completed"
             amount = float(payment.amount)
             # try:
-                # capture the payemt
+                # capture the payemt'
+            Invoice.objects.create(order=order)
             razorpay_client.payment.capture(payment_id, amount)
             try:
                 shiprocket_response = create_shiprocket_order(order)
