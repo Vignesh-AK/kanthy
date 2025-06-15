@@ -95,3 +95,21 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.id} - {self.user.username}"
+    
+class OrderItem(models.Model):
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('shipped', 'Shipped'),
+        ('delivered', 'Delivered'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
+    quantity = models.PositiveIntegerField(default=1)
+    delivery_date = models.DateTimeField(null=True, blank=True)
+    delivery_status = models.CharField(max_length=12, choices=STATUS_CHOICES)
+
+
+
+    

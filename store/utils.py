@@ -22,17 +22,19 @@ def create_shiprocket_order(order):
     url = "https://apiv2.shiprocket.in/v1/external/orders/create/adhoc"
     
     # Sample order items (adjust based on your clothing items)
-    order_items = [
-        {
-            "name": "T-Shirt",  # Replace with dynamic item name
-            "sku": "TSHIRT001",
-            "units": 1,
-            "selling_price": str(order.total_price),
-            "discount": 0,
-            "tax": 0,
-            "hsn": "6109"  # HSN code for clothing
-        }
-    ]
+    # order_items = [
+    #     {
+    #         "name": "T-Shirt",  # Replace with dynamic item name
+    #         "sku": "TSHIRT001",
+    #         "units": 1,
+    #         "selling_price": str(order.total_price),
+    #         "discount": 0,
+    #         "tax": 0,
+    #         "hsn": "6109"  # HSN code for clothing
+    #     }
+    # ]
+    for item in order:
+
     
     payload =  {
   "order_id": "ORD123456",
