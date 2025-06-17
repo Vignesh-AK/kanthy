@@ -127,6 +127,16 @@
             font-weight: 700;
             color: #d97777;
         }
+        .order-item {
+            padding-top: 1rem;
+        }
+        .order-item p{
+            margin-bottom: 0.5rem;
+            font-size: small;
+        }
+        .order-item strong {
+            font-size: medium;
+        }
     </style>
 </head>
 
@@ -189,28 +199,36 @@
     <div class="container">
         <div class="row">
             <div class="left-section col-md-6">
-                <div class="logo">Koskii</div>
-                <div class="section-title">Account</div>
-                <p>{{user.email}}</p>
-                <p>{{user.phone}}</p>
+                <div class="summary">
+                    <div class="summary">
 
-                <div class="section-title">Ship to</div>
-                {% for address in addresses %}
-                <label class="address-option">
-                    <input type="radio" name="shipping-address" value="{{ address.id }}" {% if address.id == current_address.id %}checked{% endif %}>
-                    {{ address.address }}, {{ address.city }}, {{ address.state }}, {{ address.zip_code }}
-                </label>
+                <div class="section-title">Orders</div>
+                {% for order in orders %}
+                <div class="order-block" style="border: none; margin-bottom: 20px; padding: 10px;">
+                    <p>Order ID: {{ order.order_id }}</p>
+                    <p>Order Date: {{ order.ordered_at }}</p>
+
+                    {% for item in order.items.all %}
+                    <div class="order-item" style="display: flex; align-items: center; margin-top: 10px;">
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 80px; height: auto; margin-right: 15px;">
+                        <div>
+                        <p><strong>{{ item.product.name }}</strong></p>
+                        <p>Quantity: {{ item.quantity }}</p>
+                        <p>Price: ₹{{ item.product.price }}</p>
+                        <p>Delivery Status: {{ item.delivery_status|title }}</p>
+                        {% if item.delivery_date %}
+                            <p>Delivery Date: {{ item.delivery_date }}</p>
+                        {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
                 {% endfor %}
-                <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
-                    + Add New Address
-                </button>
-                
-                <div class="section-title">Shipping method</div>
-                <div class="shipping-method">Free Shipping - FREE</div>
-                <label><input type="checkbox"> Text me with news and offers</label>
 
-                <div class="section-title">Payment</div>
-                <p>All transactions are secure and encrypted.</p>
+                    </div>
+                    </div>
+
+                
             </div>
             <!-- Add Address Modal -->
 <div class="modal fade" id="addAddressModal" tabindex="-1" aria-labelledby="addAddressModalLabel" aria-hidden="true">
@@ -249,27 +267,18 @@
             <div class="right-section col-md-6">
                 <div class="summary">
                     <div class="summary">
-                        {% for item in cart_items %}
-                        <p><strong>{{ item.product.name }}</strong> - ₹{{ item.product.price }} x {{ item.quantity }}
-                        </p>
-                        {% empty %}
-                        <p>No items in your cart.</p>
-                        {% endfor %}
-
-                        <div class="coupon-section">
-                            <input type="text" placeholder="Discount code or gift card">
-                            <button>Apply</button>
+                        
+                        <p><strong>Addresses</strong> </p>
+                        {% for address in addresses %}
+                        <div class="address-option">
+                            
+                            {{ address.address }}, {{ address.city }}, {{ address.state }}, {{ address.zip_code }}
                         </div>
-                        <p>Available Coupons: <span style="color: gray;">KOSKIILUV10 - 10% Off on Orders Above Rs.
-                                5999</span></p>
-                        <hr>
-                        <p>Subtotal: ₹{{ total_price }}</p>
-                        <p>Shipping: ₹{{ delivery }}</p>
-                        <p>Tax: ₹{{ tax_amount }}</p>
-                        <p>Discount: -₹{{ discount }}</p>
-                        <p class="total">Total: ₹{{ final_total }} (Including taxes)</p>
+                        {% endfor %}
+                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAddressModal">
+                            + Add New Address
+                        </button>
                     </div>
-                   <button onclick="placeOrder()">Place Order</button>
                     
                 </div>
             </div>
@@ -279,89 +288,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 
-    <script>
-        document.querySelectorAll('.address-option input').forEach(radio => {
-            radio.addEventListener('change', function () {
-                document.querySelectorAll('.address-option').forEach(option => option.classList.remove('selected'));
-                this.parentElement.classList.add('selected');
-            });
-        });
-    </script>
-   <script>
-
-    function placeOrder() {
-        // Get CSRF token
-        const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
-        // Get selected address
-        const selectedAddress = document.querySelector('input[name="shipping-address"]:checked');
-        const addressValue = selectedAddress ? selectedAddress.value : null;
-
-        // Get discount code
-        const discountCode = document.querySelector('.coupon-section input').value;
-
-        // Get cart items
-        const cartItems = [];
-        document.querySelectorAll('.cart-item').forEach(item => {
-            cartItems.push({
-                name: item.getAttribute('data-name'),
-                price: item.getAttribute('data-price'),
-                quantity: item.getAttribute('data-quantity'),
-            });
-        });
-
-        // Prepare data to send
-        const orderData = {
-            address: addressValue,
-            discount_code: discountCode,
-            cart_items: cartItems,
-            email: "{{ user.email }}",
-            phone: "{{ user.phone }}",
-            price: "{{ total_price }}"
-        };
-        console.log(orderData);
-        // Send POST request
-        fetch("{% url 'place_order' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrftoken,
-            },
-            body: JSON.stringify(orderData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-
-                var options = {
-      
-                // Enter the Key ID generated from the Dashboard
-                key: data.razorpay_merchant_key, 
-                
-                // Amount is in currency subunits.
-                // Default currency is INR. Hence, 
-                // 50000 refers to 50000 paise
-                amount: data.amount, 
-                currency: data.currency,
-                
-                // Your/store name.
-                name: "Kanthy", 
-                
-                // Pass the `id` obtained in the response of Step 1
-                order_id: data.razorpay_order_id, 
-                callback_url: data.callback_url,
-
-                };
-                var rzp1 = new Razorpay(options);
-
-                rzp1.open();
-            } else {
-                alert("Failed to place order.");
-            }
-        })
-        .catch(error => console.error("Error:", error));
-    }
-</script>
+    
+   
 <script>
 document.getElementById('addAddressForm').addEventListener('submit', function(e) {
     e.preventDefault();

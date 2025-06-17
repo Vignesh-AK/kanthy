@@ -255,7 +255,6 @@
         <div class="container d-flex align-items-center justify-content-between">
           <!-- Search -->
           <div class="d-none d-md-block" style="flex: 1;">
-            <input type="text" placeholder="🔍 Search For Items..." class="form-control rounded-pill" style="max-width: 300px;">
           </div>
       
           <!-- Logo -->
@@ -265,17 +264,20 @@
       
           <!-- Icons -->
           <div class="d-flex align-items-center gap-4" style="flex: 1; justify-content: end;">
-            <a href="#" class="position-relative text-dark">
-              <i class="far fa-heart fs-5"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">1</span>
-            </a>
-            <a href="#" class="text-dark"><i class="fa-solid fa-user fs-5"></i></a>
+            <a href="{% url 'profile' %}" class="text-dark"><i class="fa-solid fa-user fs-5"></i></a>
             <a href="{% url 'cart' %}" class="text-dark position-relative">
               <i class="fas fa-shopping-cart fs-5"></i>
-              {% if cart_quantity > 0 %}
-              <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_quantity }}</span>
+              {% if user.is_authenticated %}
+                {% if cart_quantity > 0 %}
+                <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_quantity }}</span>
+                {% else %}
+                <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                {% endif %}
               {% else %}
-              <span id="cartCount"></span>
+            
+               
+                <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+               
               {% endif %}
             </a>
           </div>
@@ -538,14 +540,16 @@ function updateCartCount() {
         function updateCartCount() {
           const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
           if (isAuthenticated === "false") {
-            const cart = JSON.parse(localStorage.getItem("cart")) || [];
-            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
-            document.getElementById("cartCount").innerText = count;
+            let cart = JSON.parse(localStorage.getItem("cart")) || [];
+                let count = cart.reduce((total, item) => total + item.quantity, 0);
+                if (count > 0) {
+                document.getElementById("cartCount").innerText = count;
+                }
           } else {
             document.getElementById("cartCount").innerText = "{{ cart_quantity }}";
           }
         }
-    
+        
         window.onload = function () {
           const firstVariant = document.querySelector('.color-swatch');
           if (firstVariant) {
@@ -553,6 +557,12 @@ function updateCartCount() {
           }
         }
       </script>
+      <script>
+        
+            document.addEventListener("DOMContentLoaded", function () {
+                updateCartCount();
+            });
+            </script>
     
 </body>
 

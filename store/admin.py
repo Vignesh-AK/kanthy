@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Product, Category, Brand, Cart, CartProduct, Order, ProductVariant, ProductImage, Address, ProductColor
+from .models import Product, Category, OrderItem, Brand, Cart, CartProduct, Order, ProductVariant, ProductImage, Address, ProductColor
 # Register your models here.
 admin.site.register(Product)
 admin.site.register(Category)
@@ -11,7 +11,7 @@ admin.site.register(ProductVariant)
 admin.site.register(ProductImage)
 admin.site.register(Address)
 admin.site.register(ProductColor)
-
+admin.site.register(OrderItem)
 admin.site.site_header = "Kanthy Admin"
 admin.site.site_title = "Kanthy Admin Portal"
 admin.site.index_title = "Welcome to Kanthy Admin Portal"

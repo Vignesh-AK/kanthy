@@ -121,7 +121,6 @@
         <div class="container d-flex align-items-center justify-content-between">
           <!-- Search -->
           <div class="d-none d-md-block" style="flex: 1;">
-            <input type="text" placeholder="🔍 Search For Items..." class="form-control rounded-pill" style="max-width: 300px;">
           </div>
       
           <!-- Logo -->
@@ -131,17 +130,23 @@
       
           <!-- Icons -->
           <div class="d-flex align-items-center gap-4" style="flex: 1; justify-content: end;">
-            <a href="#" class="position-relative text-dark">
-              <i class="far fa-heart fs-5"></i>
-              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">1</span>
-            </a>
-            <a href="#" class="text-dark"><i class="fa-solid fa-user fs-5"></i></a>
+            <a href="{% url 'profile' %}" class="text-dark"><i class="fa-solid fa-user fs-5"></i></a>
+            
             <a href="{% url 'cart' %}" class="text-dark position-relative">
-              <i class="fas fa-shopping-cart fs-5"></i>
-              {% if cart_items|length > 0 %}
-              <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_items|length }}</span>
-              {% endif %}
-            </a>
+                <i class="fas fa-shopping-cart fs-5"></i>
+                {% if user.is_authenticated %}
+                  {% if cart_quantity > 0 %}
+                  <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">{{ cart_quantity }}</span>
+                  {% else %}
+                  <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                  {% endif %}
+                {% else %}
+              
+                 
+                  <span id="cartCount" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"></span>
+                 
+                {% endif %}
+              </a>
           </div>
         </div>
       </header>
@@ -330,43 +335,12 @@ window.onload = displayCart;
     function checkout() {
         let is_authenticated = "{{user.is_authenticated}}"
         if (is_authenticated == "False"){
-            let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-            if (cart.length === 0) {
-                alert("Your cart is empty!");
-                return;
-            }
-
-            fetch('/save-cart/', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken()
-            },
-            body: JSON.stringify({ cart: cart })
-        })
-        .then(response => {
-            if (response.status === 401) {
+            
+        
                 window.location.href = "/user/login/";
                 return;
-            }
-            return response.json();
-        })
-        .then(data => {
-            if (!data) return; // response was a redirect or empty
-
-            console.log("Cart saved successfully:", data);
-            if (data.success) {
-                localStorage.removeItem("cart");
-                window.location.href = "/checkout/";
-            } else {
-                alert("Failed to save cart. Please try again.");
-            }
-        })
-        .catch(error => {
-            console.error("Error saving cart:", error);
-            alert("Something went wrong while saving the cart.");
-        });
+           
+        
     }else{
         window.location.href = "/checkout/";
     }

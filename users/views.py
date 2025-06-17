@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.shortcuts import redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
-from store.models import Address
+from store.models import Address, CartProduct
 from django.http import JsonResponse
+
 
 
 def login(request):
@@ -53,3 +54,14 @@ def add_address(request):
 
         return JsonResponse({'success': True})
     return JsonResponse({'success': False}, status=400)
+
+def profile(request):
+    if request.user.is_authenticated:
+        return render(request, 'profile.html', {
+            'user': request.user,
+            'orders': request.user.order_set.all(),
+            'addresses': Address.objects.filter(user=request.user),
+            "cart_quantity": sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
+        })
+    else:
+        return redirect('login')

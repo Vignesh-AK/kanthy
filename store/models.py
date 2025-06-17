@@ -36,7 +36,7 @@ class Product(models.Model):
     is_featured = models.BooleanField(default=False)
     is_discounted = models.BooleanField(default=False)
 
-    
+
     def __str__(self):
         return self.name
 
@@ -124,7 +124,7 @@ class OrderItem(models.Model):
         ('cancelled', 'Cancelled'),
     ]
 
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True)
     quantity = models.PositiveIntegerField(default=1)
     delivery_date = models.DateTimeField(null=True, blank=True)

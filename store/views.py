@@ -39,9 +39,9 @@ def product_list(request):
         'selected_max_price': max_price,
         'selected_colors': colors,
         'selected_sizes': sizes,
-        'cart_items': CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else [],
+        'cart_quantity': sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0,
     }
-
+    print("Context:", context)
     return render(request, 'index.html', context)
 
 def product_list_filter(request, product_type):
@@ -70,14 +70,16 @@ def product_list_filter(request, product_type):
         'selected_colors': colors,
         'selected_sizes': sizes,
         'cart_items': CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else [],
+        'cart_quantity': sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0,
     }
 
     return render(request, 'index.html', context)
 
 def product_detail(request, product_id):
     product = get_object_or_404(Product, id=product_id)
+    cart_quantity = sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
     cart_items = CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else []
-    cart_quantity = sum(item.quantity for item in cart_items)
+
     return render(request, 'product-detail.html', {'product': product, 'cart_quantity': cart_quantity})
 
 def cart(request):
@@ -105,7 +107,8 @@ def cart(request):
             "delivery_charge": delivery
         }
         print(cart)
-        return render(request, 'cart.html', {"cart": json.dumps(cart), "price": cart,"user": request.user})
+        cart_quantity = sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
+        return render(request, 'cart.html', {"cart": json.dumps(cart), "price": cart,"user": request.user, 'cart_quantity': cart_quantity})
     else:
         return render(request, 'cart.html')
     
@@ -128,33 +131,53 @@ def checkout(request):
         "email": request.user.email,
         "phone": request.user.phone,
         "current_address": address.filter(is_default=True).first(),
-        "addresses": address
+        "addresses": address,
+        "cart_quantity": sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
     }
     return render(request, "checkout.html", context)
     
 def save_cart(request):
     if request.method == "POST":
         if request.user.is_authenticated:
-            try:
-                data = json.loads(request.body)
-                cart_items = data.get("cart", [])
+            # try:
+            data = json.loads(request.body)
+            cart_items = data.get("cart", [])
 
-                # Clear existing cart items for the user (optional)
-                Cart.objects.filter(user=request.user).delete()
+            # Clear existing cart items for the user (optional)
+            # Cart.objects.filter(user=request.user).delete()
 
-                # Save each item to the database
+            # Save each item to the database
+            is_cart = Cart.objects.filter(user=request.user).exists()
+            if is_cart:
+                print("cart is there")
+                cart = Cart.objects.get(user=request.user)
+                for item in cart_items:
+                    print(item)
+                    product = Product.objects.get(id=item["id"])  # Check if product exists
+                    if CartProduct.objects.filter(cart=cart, product=product).exists():
+                        cart_product = CartProduct.objects.get(cart=cart, product=product)
+                        cart_product.quantity += item.get("quantity", 1)
+                        cart_product.save()
+                    else:
+                        CartProduct.objects.create(
+                            cart=cart,
+                            product=product,
+                            quantity=item.get("quantity", 1)  # Default to 1 if not provided
+                        )
+                        print("else working ")
+                    
+            else:
                 cart = Cart.objects.create(user=request.user)
                 for item in cart_items:
-                    product = Product.objects.get(id=item["id"])  # Check if product exists
+                    product = Product.objects.get(id=item["id"])
                     CartProduct.objects.create(
                         cart=cart,
                         product=product,
                         quantity=item.get("quantity", 1)  # Default to 1 if not provided
                     )
-
-                return JsonResponse({"success": True})
-            except Exception as e:
-                return JsonResponse({"success": False, "error": str(e)})
+            return JsonResponse({"success": True})
+            # except Exception as e:
+            #     return JsonResponse({"success": False, "error": str(e)})
         else:
             return JsonResponse({"success": False, "error": "User not authenticated", }, status=401)
     return JsonResponse({"success": False, "error": "Invalid request"})
