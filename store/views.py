@@ -75,8 +75,8 @@ def product_list_filter(request, product_type):
 
     return render(request, 'index.html', context)
 
-def product_detail(request, product_id):
-    product = get_object_or_404(Product, id=product_id)
+def product_detail(request, slug):
+    product = get_object_or_404(Product, slug=slug)
     cart_quantity = sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
     cart_items = CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else []
 

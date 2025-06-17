@@ -224,7 +224,7 @@
                     {% for product in products %}
                     <div class="col-md-3">
                         <div class="card border-0">
-                            <a href="{% url 'product_detail' product.id %}">
+                            <a href="{% url 'product_detail' product.slug %}">
 
                                 <img src="{{product.image.url}}" class="card-img-top" alt="{{product.name}}">
                                 <div class="card-body text-center">
@@ -285,7 +285,7 @@ function updateCartCount() {
                 if (data.status === 200) {
                     localStorage.removeItem("cart");
                     console.log("Cart cleared from localStorage after saving.");
-                    
+
                 } 
         })
         .catch(error => {

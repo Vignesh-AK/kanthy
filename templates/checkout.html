@@ -115,6 +115,14 @@
             border-radius: 5px;
             cursor: pointer;
         }
+        .place-order{
+            padding: 8px 12px;
+            border: none;
+            background: #d97777;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
 
         .summary {
             background: #f9f9f9;
@@ -269,7 +277,7 @@
                         <p>Discount: -₹{{ discount }}</p>
                         <p class="total">Total: ₹{{ final_total }} (Including taxes)</p>
                     </div>
-                   <button onclick="placeOrder()">Place Order</button>
+                   <button class="place-order" onclick="placeOrder()">Place Order</button>
                     
                 </div>
             </div>
