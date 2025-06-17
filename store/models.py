@@ -35,7 +35,7 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     is_featured = models.BooleanField(default=False)
     is_discounted = models.BooleanField(default=False)
-
+    discount = models.DecimalField(max_digits=5, decimal_places=2, default=0.00, blank=True, null=True)
 
     def __str__(self):
         return self.name

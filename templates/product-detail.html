@@ -371,7 +371,7 @@
                   </div>
                 <!-- Buttons -->
                 <div class="buttons">
-                    <button class="cart-btn" onclick="addToCart('{{product.name}}', '{{product.price}}', '{{product.image.url}}', '{{product.id}}')"><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
+                    <button class="cart-btn" onclick="addToCart('{{product.name}}', '{{product.price}}', '{{product.image.url}}', '{{product.id}}', '{{product.discount}}')"><i class="fas fa-shopping-cart"></i> ADD TO CART</button>
                     <button class="wishlist-btn"><i class="far fa-heart"></i> WISHLIST</button>
                 </div>
             </div>
@@ -507,7 +507,8 @@ function updateCartCount() {
           });
         });
     
-        function addToCart(name, price, image, id) {
+        function addToCart(name, price, image, id, discount) {
+          console.log(discount)
           const isAuthenticated = "{{ user.is_authenticated|yesno:'true,false' }}";
     
           if (isAuthenticated === "true") {
@@ -529,7 +530,7 @@ function updateCartCount() {
             if (item) {
               item.quantity += 1;
             } else {
-              cart.push({ name, price, image, id, quantity: 1 });
+              cart.push({ name, price, image, discount, id, quantity: 1 });
             }
             localStorage.setItem("cart", JSON.stringify(cart));
             updateCartCount();
