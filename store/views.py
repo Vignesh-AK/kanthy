@@ -1,8 +1,8 @@
 from django.shortcuts import render, get_object_or_404
-
+from django.db.models import Count, Sum, Avg
 from payment.models import Payment
 from .models import Product
-from .utils import create_shiprocket_order, get_estimated_delivery_date, get_shiprocket_token
+from .utils import create_shiprocket_order, get_estimated_delivery_date, get_shiprocket_token, get_estimated_delivery_date_api, get_cheapest_surface_courier
 import uuid
 from .models import Order, Address, OrderItem
 from django.shortcuts import render, redirect
@@ -76,7 +76,9 @@ def product_list_filter(request, product_type):
     return render(request, 'index.html', context)
 
 def product_detail(request, slug):
-    product = get_object_or_404(Product, slug=slug)
+    product = Product.objects.annotate(
+    avg_rating=Avg('reviews__rating'),
+    total_reviews=Count('reviews')).get(slug=slug)
     cart_quantity = sum(item.quantity for item in CartProduct.objects.filter(cart__user=request.user)) if request.user.is_authenticated else 0
     cart_items = CartProduct.objects.filter(cart__user=request.user) if request.user.is_authenticated else []
 
@@ -113,12 +115,12 @@ def cart(request):
         return render(request, 'cart.html')
     
 def checkout(request):
-    cart_items = Cart.objects.get(user=request.user).cartproduct_set.all()
+    cart_items = Cart.objects.get(user=request.user).products.all()
 
     total_price = float(sum(item.product.price * item.quantity for item in cart_items))
     delivery = 40
     discount = 100
-    tax_amount = total_price * 0.1
+    tax_amount = total_price * 0.18
     final_total = total_price + tax_amount + delivery - discount
     address = request.user.address.all()
     context = {
@@ -199,17 +201,28 @@ def place_order(request):
     # city = address.city
     # pincode = address.pincode
     # state = address.state
+    weight = sum(item.product.weight * item.quantity for item in CartProduct.objects.filter(cart__user=request.user))
+    if weight <= 0:
+        weight = 1
     amount = data.get("price")  # Total amount of the order
-
+    data = get_estimated_delivery_date_api("560066", address.pincode, 1, 0)
+    cheap = get_cheapest_surface_courier(data)
+    delivery = cheap.get("rate", 40)  # Default delivery charge if not provided
     print("Amount:", amount)
     quantity = request.POST.get("quantity", 1)  # Default to 1 if not provided
     # Create order in your database
+    total = float(amount) + float(delivery)
     order = Order.objects.create(
         order_id=str(uuid.uuid4()),  # Unique order ID
         quantity=quantity,
         user=request.user,
         address=address,
-        total_price=float(amount)
+        total_price=total,
+        tax=float(amount) * 0.18,  # Example tax calculation
+        delivery_charge=float(delivery),
+        gift_wrap_charge=0.00,  # Example gift wrap charge
+        transaction_charge=0.00,  # Example transaction charge
+        sub_total=float(amount),  # Example subtotal
     )
     for product in CartProduct.objects.filter(cart__user=request.user):
         OrderItem.objects.create(
@@ -220,7 +233,7 @@ def place_order(request):
     currency = 'INR'
 
     # Create a Razorpay Order
-    razorpay_order = razorpay_client.order.create(dict(amount=float(amount),
+    razorpay_order = razorpay_client.order.create(dict(amount=float(total*100),
                                                        currency=currency,
                                                        payment_capture='0'))
 
@@ -238,16 +251,16 @@ def place_order(request):
     Payment.objects.create(
         order=order,
         user=request.user,
-        amount=amount,
+        amount=total,
         status='pending',
         transaction_id=razorpay_order_id,
     )
-    print("Payment created:", float(amount)*100)
+    print("Payment created:", float(total)*100)
     return JsonResponse({
         'success': True,
         'razorpay_order_id': razorpay_order_id,
         'razorpay_merchant_key': settings.RAZOR_KEY_ID,
-        'amount': float(amount)*100,  # Convert to paise
+        'amount': float(total)*100,  # Convert to paise
         'currency': currency,
         'callback_url': callback_url
     })
@@ -332,3 +345,24 @@ def add_to_cart(request):
     # except Exception as e:
     #     return JsonResponse({"success": False, "message": str(e)}, status=500)
 
+
+def get_estimated_delivery_date(request):
+    if request.method == "POST":
+        data = json.loads(request.body)
+        pickup_pincode = "560066"
+        address_id = data.get("address_id")
+        address = Address.objects.get(id=address_id)
+
+        cart = Cart.objects.get(user=request.user)
+        weight = sum(item.product.weight * item.quantity for item in cart.products.all())
+        if weight <= 0:
+            weight = 1
+        cod = data.get("cod", 0)  # Default COD is 0
+
+        estimated_delivery_date = get_estimated_delivery_date_api(pickup_pincode, address.pincode, weight, cod)
+        print("Estimated Delivery Date:", estimated_delivery_date)
+        data = get_cheapest_surface_courier(estimated_delivery_date)
+
+        return JsonResponse({"success": True, "data": data})
+    
+    return JsonResponse({"success": False, "error": "Invalid request"}, status=400)

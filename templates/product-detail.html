@@ -248,6 +248,13 @@
   color: #fff;
 }
     </style>
+    <style>
+      .star-container i {
+        color: #f5a623;
+        font-size: 1.3rem;
+        margin-right: 2px;
+      }
+    </style>
 </head>
 
 <body>
@@ -333,12 +340,15 @@
                 <p class="breadcrumb">Home / Sarees</p>
                 <h1>{{product.name}}</h1>
                 <p class="price">{{product.price}} <span class="tax">Tax included.</span></p>
-                <p class="rating">⭐ ⭐ ⭐ ⭐ ⭐ <span>(1 Review)</span></p>
+                <div class="rating-stars" data-rating="{{ product.avg_rating|default:0 }}">
+                  <div class="star-container"></div>
+                  <span class="text-muted">({{ product.total_reviews }} Reviews)</span>
+                </div>
 
                 <!-- Offers Section -->
                 <div class="offers">
                     <h3>AVAILABLE OFFERS</h3>
-                    <p class="offer-text"><strong>BUY 2 GET 1 FREE</strong><br>
+                    <p class="offer-text"><strong>BUY 3 GET 1 FREE</strong><br>
                         Add 3 Products To Your Cart And Get 1 For Free! * <br>
                         Applicable On Select Merchandise</p>
                 </div>
@@ -564,6 +574,28 @@ function updateCartCount() {
                 updateCartCount();
             });
             </script>
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                const ratingContainers = document.querySelectorAll(".rating-stars");
+            
+                ratingContainers.forEach(container => {
+                  const rating = parseFloat(container.dataset.rating || "0");
+                  const starSpan = container.querySelector(".star-container");
+                  starSpan.innerHTML = "";
+            
+                  for (let i = 1; i <= 5; i++) {
+                    if (rating >= i) {
+                      starSpan.innerHTML += '<i class="fa-solid fa-star"></i>';          // full star
+                    } else if (rating >= i - 0.5) {
+                      starSpan.innerHTML += '<i class="fa-solid fa-star-half-alt"></i>'; // half star
+                    } else {
+                      starSpan.innerHTML += '<i class="fa-regular fa-star"></i>';          // empty star
+                    }
+                  }
+                });
+              });
+            </script>
+            
     
 </body>
 

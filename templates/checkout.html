@@ -70,6 +70,7 @@
         .section-title {
             font-size: 18px;
             font-weight: 600;
+            padding-top: 30px;
             margin-bottom: 10px;
         }
 
@@ -214,7 +215,7 @@
                 </button>
                 
                 <div class="section-title">Shipping method</div>
-                <div class="shipping-method">Free Shipping - FREE</div>
+                <div class="shipping-method"><p style="margin-bottom: 0;" id="estimated-delivery"></p></div>
                 <label><input type="checkbox"> Text me with news and offers</label>
 
                 <div class="section-title">Payment</div>
@@ -272,10 +273,11 @@
                                 5999</span></p>
                         <hr>
                         <p>Subtotal: ₹{{ total_price }}</p>
-                        <p>Shipping: ₹{{ delivery }}</p>
+                        <p id="shipping">Shipping: ₹{{ delivery }}</p>
                         <p>Tax: ₹{{ tax_amount }}</p>
                         <p>Discount: -₹{{ discount }}</p>
                         <p class="total">Total: ₹{{ final_total }} (Including taxes)</p>
+                        
                     </div>
                    <button class="place-order" onclick="placeOrder()">Place Order</button>
                     
@@ -349,7 +351,7 @@
                 // Amount is in currency subunits.
                 // Default currency is INR. Hence, 
                 // 50000 refers to 50000 paise
-                amount: data.amount, 
+            
                 currency: data.currency,
                 
                 // Your/store name.
@@ -360,6 +362,7 @@
                 callback_url: data.callback_url,
 
                 };
+                console.log(options);
                 var rzp1 = new Razorpay(options);
 
                 rzp1.open();
@@ -451,6 +454,60 @@ document.getElementById('addAddressForm').addEventListener('submit', function(e)
         }
     
         </script>
+        <script>
+            function updateDeliveryCharge(addressId) {
+                const csrftoken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            
+                fetch("{% url 'get_delivery_charge' %}", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({ address_id: addressId }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log("Delivery charge updated:", data.data.rate);
+                        let rate = data.data.rate
+                        // Update delivery and total amounts in the UI
+                        document.getElementById('shipping').innerHTML = `Shipping: ₹${rate}`;
+            
+                        const subtotal = parseFloat("{{ total_price }}");
+                        const tax = parseFloat("{{ tax_amount }}");
+                        const discount = parseFloat("{{ discount }}");
+                        const finalTotal = subtotal + rate;
+            
+                        document.querySelector('.total').innerText = `Total: ₹${finalTotal.toFixed(2)} (Including taxes)`;
+                        document.getElementById('estimated-delivery').innerText = `Estimated Delivery: ${data.data.etd}`;
+                    } else {
+                        alert("Could not update delivery charge.");
+                    }
+                })
+                .catch(err => console.error("Error fetching delivery charge:", err));
+            }
+            document.querySelectorAll('.address-option input').forEach(radio => {
+    radio.addEventListener('change', function () {
+        document.querySelectorAll('.address-option').forEach(option => option.classList.remove('selected'));
+        this.parentElement.classList.add('selected');
+
+        updateDeliveryCharge(this.value); // <--- Call on address change
+    });
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+    const selected = document.querySelector('input[name="shipping-address"]:checked');
+    if (selected) {
+        updateDeliveryCharge(selected.value);
+    }
+
+    updateCartCount();
+    if ('{{ user.is_authenticated|lower }}' === 'true') {
+        updateCartProfile();
+    }
+});
+            </script>
 </body>
 
 </html>

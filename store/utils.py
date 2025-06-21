@@ -2,6 +2,8 @@ import requests
 import json
 from store.models import OrderItem
 from datetime import datetime
+import requests
+import json
 
 def get_shiprocket_token():
     url = "https://apiv2.shiprocket.in/v1/external/auth/login"
@@ -52,9 +54,9 @@ def create_shiprocket_order(order):
   "order_id": order.order_id,
   "order_date": formatted_date,
   "pickup_location": "Home",
-  "channel_id": "",
+  "channel_id": 6428364,
   "comment": "Handle with care",
-  "reseller_name": "John Doe Reseller",
+  "reseller_name": "Kanthy",
   "company_name": "Wonderstroke Arts Pvt Ltd",
   "billing_customer_name": "Binu",
   "billing_last_name": "Pv",
@@ -126,3 +128,39 @@ def get_estimated_delivery_date(token, pickup_pincode, delivery_pincode, weight=
     response = requests.get(url, headers=headers, data=json.dumps(data))
     print(response.json())
     return response.json()
+
+
+def get_estimated_delivery_date_api( pickup_pincode, delivery_pincode, weight=1, cod=0):
+    token = get_shiprocket_token()
+    
+
+    url = f"https://apiv2.shiprocket.in/v1/external/courier/serviceability/?pickup_postcode={pickup_pincode}&delivery_postcode={delivery_pincode}&weight={weight}&cod={cod}"
+
+    payload = ""
+    headers = {
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {token}'
+    }
+
+    response = requests.request("GET", url, headers=headers, data=payload)
+    return response.json()
+
+
+def get_cheapest_surface_courier(data):
+    cheapest = None
+    for courier in data['data']['available_courier_companies']:
+        if courier.get("is_surface") and courier.get("rate"):
+            try:
+                rate = float(courier['rate'])
+                if cheapest is None or rate < cheapest['rate']:
+                    cheapest = {
+                        "name": courier['courier_name'],
+                        "rate": rate,
+                        "etd": courier.get('etd', 'N/A'),
+                        "rating": courier.get('rating', 'N/A'),
+                        "id": courier.get('id', 'N/A')
+                    }
+            except ValueError:
+                continue  # Skip if rate isn't a valid number
+
+    return cheapest
